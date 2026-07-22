@@ -1,24 +1,25 @@
 from fastapi import FastAPI
-from pydantic import BaseModel
+from typing import Dict, Any
 
 app = FastAPI()
 
-class Request(BaseModel):
-    old_price: float
-    new_price: float
-    days_remaining: int
-    days_in_actual_month: int
-    spec: str
-
 @app.post("/check")
-def prorate(req: Request):
-    diff = req.new_price - req.old_price
+def prorate(req: Dict[str, Any]):
+    old_price = float(req.get("old_price", 0))
+    new_price = float(req.get("new_price", 0))
+    days_remaining = float(req.get("days_remaining", 0))
+    days_in_actual_month = float(req.get("days_in_actual_month", 30))
+    spec = req.get("spec", "v1")
 
-    if req.spec == "v1":
-        charge = diff * (req.days_remaining / 30)
-    elif req.spec == "v2":
-        charge = diff * (req.days_remaining / req.days_in_actual_month)
+    diff = new_price - old_price
+
+    if spec == "v1":
+        charge = diff * (days_remaining / 30)
     else:
-        return {"error": "Invalid spec"}
+        charge = diff * (days_remaining / days_in_actual_month)
 
     return {"charge": charge}
+
+@app.get("/")
+def root():
+    return {"status": "ok"}
