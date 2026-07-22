@@ -10,7 +10,7 @@ class Request(BaseModel):
     days_in_actual_month: int
     spec: str
 
-@app.post("/")
+@app.post("check")
 def prorate(req: Request):
     diff = req.new_price - req.old_price
 
